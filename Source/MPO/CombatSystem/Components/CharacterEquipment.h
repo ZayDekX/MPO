@@ -36,7 +36,7 @@ private:
 
     int32 ActiveSlot = -1;
 
-    UPROPERTY()
+    UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess))
     UWeaponItem* EquippedItem;
 
     UPROPERTY()
@@ -87,8 +87,10 @@ public:
     UFUNCTION(BlueprintCallable)
     void ChangeWeapon();
 
+    UFUNCTION(BlueprintCallable)
     void StopShot();
 
+    UFUNCTION(BlueprintCallable)
     void BeginShot();
 
     UFUNCTION(BlueprintCallable)

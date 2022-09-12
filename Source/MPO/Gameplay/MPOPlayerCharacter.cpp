@@ -42,7 +42,7 @@ void AMPOPlayerCharacter::Tick(float DeltaSeconds) {
     }
 }
 
-FVector AMPOPlayerCharacter::GetLookAtPoint() {
+FVector AMPOPlayerCharacter::GetLookAtPoint_Implementation() {
     if (auto PlayerController = GetController<AMPOPlayerController>()) {
         return PlayerController->PointUnderCursorLocation;
     }

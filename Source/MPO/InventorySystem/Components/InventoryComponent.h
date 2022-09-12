@@ -27,7 +27,14 @@ public:
 		return true;
 	}
 
-	UInventorySlot* Find(UBaseItemData* Key);
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UInventorySlot* FindByDataAsset(UBaseItemData* Key);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UInventorySlot* FindByClass(UClass* Key);
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int32 FindIndexByClass(TSubclassOf<UInventoryItem> Key);
 
 	/* Actual item storage */
 	UPROPERTY(BlueprintReadOnly)

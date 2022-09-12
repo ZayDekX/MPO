@@ -11,7 +11,7 @@ void UItemStorage::Init() {
     }
 }
 
-UInventorySlot* UItemStorage::Find(UBaseItemData* Key) {
+UInventorySlot* UItemStorage::FindByDataAsset(UBaseItemData* Key) {
     if (!Key) {
         return nullptr;
     }
@@ -23,6 +23,37 @@ UInventorySlot* UItemStorage::Find(UBaseItemData* Key) {
     }
 
     return nullptr;
+}
+
+UInventorySlot* UItemStorage::FindByClass(TSubclassOf<UInventoryItem> Key) {
+    if (!Key) {
+        return nullptr;
+    }
+
+    for (auto Slot : Content) {
+        if (Slot->Content && Slot->Content->GetClass()->IsChildOf(Key)) {
+            return Slot;
+        }
+    }
+
+    return nullptr;
+}
+
+int32 UItemStorage::FindIndexByClass(TSubclassOf<UInventoryItem> Key) {
+    if (!Key) {
+        return -1;
+    }
+
+    auto Index = 0;
+
+    for (auto Slot : Content) {
+        if (Slot->Content && Slot->Content->GetClass()->IsChildOf(Key)) {
+            return Index;
+        }
+        Index++;
+    }
+
+    return -1;
 }
 
 void UItemStorage::SetCellContent(int32 SlotId, UInventoryItem* Item)

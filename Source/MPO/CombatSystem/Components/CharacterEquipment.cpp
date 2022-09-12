@@ -72,7 +72,7 @@ void UCharacterEquipment::BeginReload() {
     if (!Character) {
         return;
     }
-    AmmoSlot = Character->GetCharacterInventory()->Find(EquippedItem->GetAllowedAmmo());
+    AmmoSlot = Character->GetCharacterInventory()->FindByDataAsset(EquippedItem->GetAllowedAmmo());
     if (!AmmoSlot) {
         return;
     }

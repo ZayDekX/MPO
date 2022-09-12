@@ -21,10 +21,26 @@ void UInventoryComponent::BeginPlay()
     Super::BeginPlay();
 }
 
-UInventorySlot* UInventoryComponent::Find(UBaseItemData* Key) {
+UInventorySlot* UInventoryComponent::FindByDataAsset(UBaseItemData* Key) {
     if (!Storage) {
         return nullptr;
     }
 
-    return Storage->Find(Key);
+    return Storage->FindByDataAsset(Key);
+}
+
+UInventorySlot* UInventoryComponent::FindByClass(UClass* Key) {
+    if (!Storage) {
+        return nullptr;
+    }
+
+    return Storage->FindByClass(Key);
+}
+
+int32 UInventoryComponent::FindIndexByClass(TSubclassOf<UInventoryItem> Key) {
+    if (!Storage) {
+        return -1;
+    }
+
+    return Storage->FindIndexByClass(Key);
 }

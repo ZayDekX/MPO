@@ -31,7 +31,7 @@ public:
 
     virtual void Tick(float DeltaSeconds) override;
     
-    virtual FVector GetLookAtPoint() override;
+    virtual FVector GetLookAtPoint_Implementation() override;
 
     /** Returns TopDownCameraComponent subobject **/
     FORCEINLINE class UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }

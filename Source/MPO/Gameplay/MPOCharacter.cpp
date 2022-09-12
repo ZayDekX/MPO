@@ -45,7 +45,7 @@ void AMPOCharacter::BeginPlay() {
     HealthManager->OnRevive.AddDynamic(this, &AMPOCharacter::OnRevive);
 }
 
-void AMPOCharacter::OnDeath() {
+void AMPOCharacter::OnDeath_Implementation() {
     GetCharacterMovement()->DisableMovement();
     GetController()->SetIgnoreMoveInput(true);
     GetMesh()->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
@@ -53,7 +53,7 @@ void AMPOCharacter::OnDeath() {
     GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 }
 
-void AMPOCharacter::OnRevive() {
+void AMPOCharacter::OnRevive_Implementation() {
     GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
     GetController()->SetIgnoreMoveInput(false);
     auto DetachedMesh = GetMesh();
@@ -76,6 +76,6 @@ void AMPOCharacter::Tick(float DeltaSeconds)
     AddActorWorldRotation(FRotator(0, Delta.Yaw, 0));
 }
 
-FVector AMPOCharacter::GetLookAtPoint() {
+FVector AMPOCharacter::GetLookAtPoint_Implementation() {
     return GetActorForwardVector();
 }

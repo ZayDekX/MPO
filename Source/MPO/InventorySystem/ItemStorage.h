@@ -31,7 +31,15 @@ public:
 
     /* Find first slot with content described by provided data */
     UFUNCTION(BlueprintCallable, BlueprintPure)
-    UInventorySlot* Find(UBaseItemData* Key);
+    UInventorySlot* FindByDataAsset(UBaseItemData* Key);
+
+    /* Find first slot with content described by provided class */
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    UInventorySlot* FindByClass(TSubclassOf<UInventoryItem> Key);
+    
+    /* Find index of first slot with content described by provided class */
+    UFUNCTION(BlueprintCallable, BlueprintPure)
+    int32 FindIndexByClass(TSubclassOf<UInventoryItem> Key);
 
     /* Get item from specific slot by slot index */
     UFUNCTION(BlueprintCallable, BlueprintPure)

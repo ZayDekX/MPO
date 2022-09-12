@@ -35,7 +35,9 @@ public:
 
     FORCEINLINE class UHealthComponent* GetHealthManager() { return HealthManager; }
 
-    virtual FVector GetLookAtPoint();
+    UFUNCTION(BlueprintNativeEvent)
+    FVector GetLookAtPoint();
+    virtual FVector GetLookAtPoint_Implementation();
 
 protected:
     virtual void BeginPlay() override;
@@ -54,11 +56,13 @@ private:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = "true"))
     class UHealthComponent* HealthManager;
 
-    UFUNCTION()
-    virtual void OnDeath();
-
-    UFUNCTION()
-    virtual void OnRevive();
-
 public:
+    UFUNCTION(BlueprintNativeEvent)
+    void OnDeath();
+    virtual void OnDeath_Implementation();
+
+    UFUNCTION(BlueprintNativeEvent)
+    void OnRevive();
+    virtual void OnRevive_Implementation();
+
 };

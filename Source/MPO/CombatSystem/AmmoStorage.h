@@ -26,11 +26,13 @@ public:
 
 	UAmmoItem* GetAmmo();
 
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool IsEmpty() {
 		auto Slot = GetAmmoSlot();
 		return !IsValid(Slot) || Slot->IsEmpty();
 	}
 
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool IsFull() {
 		auto Slot = GetAmmoSlot();
 		return IsValid(Slot) && Slot->IsFull();
