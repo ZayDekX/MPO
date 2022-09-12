@@ -58,7 +58,12 @@ void AGenericWeapon::OnMeshLoaded() {
 }
 
 void AGenericWeapon::BeginFire(int32 MaxShots) {
-    if (MaxShots < 0 || bIsReloading || !(Ammo && Ammo->Count > 0 && Ammo->TryBeUsed(this))) {
+    if (!Ammo->IsValidLowLevel()) {
+        GEngine->AddOnScreenDebugMessage(INDEX_NONE, 10, FColor::Red, "Detected invalid ammo in weapon!");
+        return;
+    }
+
+    if (MaxShots < 0 || bIsReloading || !(IsValid(Ammo) && Ammo->Count > 0 && Ammo->TryBeUsed(this))) {
         PerformedShots = 0;
         return;
     }
