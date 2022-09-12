@@ -15,7 +15,10 @@ class MPO_API UWeaponItem : public UInventoryItem, public IItemUser
 {
     GENERATED_BODY()
 
+private:
+    UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess))
     int32 SelectedModeId;
+
 public:
     virtual void Init() override;
 

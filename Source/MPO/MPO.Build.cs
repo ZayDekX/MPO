@@ -15,6 +15,7 @@ public class MPO : ModuleRules
             "MPO/InventorySystem",
             "MPO/CombatSystem",
             "MPO/Gameplay",
+            "MPO"
         });
         PublicDependencyModuleNames.AddRange(new string[]
         {

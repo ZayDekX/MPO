@@ -8,12 +8,15 @@
 #include "Engine/World.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
 #include "Components/HealthComponent.h"
 #include "MPOActions.h"
 
 AMPOPlayerController::AMPOPlayerController()
 {
     bShowMouseCursor = true;
+    SetTickableWhenPaused(true);
+    bShouldPerformFullTickWhenPaused = true;
     DefaultMouseCursor = EMouseCursor::Crosshairs;
 }
 
@@ -46,12 +49,20 @@ void AMPOPlayerController::SetupInputComponent()
     InputComponent->BindAction(ACT_EQUIP_HOTBAR_1, IE_Pressed, this, &AMPOPlayerController::OnEquipHotbarSlot1);
     InputComponent->BindAction(ACT_EQUIP_HOTBAR_2, IE_Pressed, this, &AMPOPlayerController::OnEquipHotbarSlot2);
     InputComponent->BindAction(ACT_TOGGLE_INVENTORY, IE_Pressed, this, &AMPOPlayerController::OnToggleInventory);
+    InputComponent->BindAction(ACT_TOGGLE_PAUSE, IE_Pressed, this, &AMPOPlayerController::OnToggleGamePause);
     InputComponent->BindAction(ACT_RELOAD, IE_Pressed, this, &AMPOPlayerController::OnReloadWeapon);
     InputComponent->BindAction(ACT_USE_ACTIVE_ITEM, IE_Pressed, this, &AMPOPlayerController::OnUseActiveItem);
     InputComponent->BindAction(ACT_USE_ACTIVE_ITEM, IE_Released, this, &AMPOPlayerController::OnEndUseActiveItem);
     InputComponent->BindAction(ACT_ROTATE_CAMERA_COUNTERCLOCKWISE, IE_Pressed, this, &AMPOPlayerController::OnRotateCameraCounterClockwise);
     InputComponent->BindAction(ACT_ROTATE_CAMERA_CLOCKWISE, IE_Pressed, this, &AMPOPlayerController::OnRotateCameraClockwise);
     InputComponent->BindAction(ACT_CHANGE_FIRING_MODE, IE_Pressed, this, &AMPOPlayerController::OnChangeFiringMode);
+}
+
+void AMPOPlayerController::BeginPlay() {
+    Super::BeginPlay();
+    auto Widget = CreateWidget<UUserWidget>(this, InGameUIWidgetClass);
+    Widget->AddToViewport();
+    UIWidget = Widget;
 }
 
 void AMPOPlayerController::OnChangeFiringMode() {
@@ -100,19 +111,14 @@ void AMPOPlayerController::OnRotateCameraCounterClockwise()
 }
 
 void AMPOPlayerController::OnToggleInventory() {
-    if (!IsValid(InventoryWidget)) {
-        if (!IsValid(InventoryWidgetClass)) {
-            GEngine->AddOnScreenDebugMessage(INDEX_NONE, 10, FColor::Red, "Inventory widget class is unset!");
-            return;
-        }
-
-        InventoryWidget = CreateWidget<UUserWidget>(this, InventoryWidgetClass);
-        InventoryWidget->AddToViewport();
+    if (!IsPaused()) {
+        IMasterUIManager::Execute_TogglePlayerInventory(UIWidget);
     }
-    else {
-        auto InventoryVisibility = InventoryWidget->IsVisible() ? ESlateVisibility::Collapsed : ESlateVisibility::Visible;
-        InventoryWidget->SetVisibility(InventoryVisibility);
-    }
+}
+        
+void AMPOPlayerController::OnToggleGamePause() {
+    UGameplayStatics::SetGamePaused(this, !IsPaused());
+    IMasterUIManager::Execute_TogglePauseMenu(UIWidget);
 }
 
 void AMPOPlayerController::SetNewMoveDestination(const FVector DestLocation)

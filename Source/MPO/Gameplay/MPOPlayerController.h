@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MasterUIManager.h"
 #include "GameFramework/PlayerController.h"
 #include "MPOPlayerController.generated.h"
 
@@ -25,11 +26,11 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	FRotator TargetCameraRotation;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
-	TSubclassOf<UUserWidget> InventoryWidgetClass;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, meta=(MustImplement="MasterUIManager"))
+	TSubclassOf<UUserWidget> InGameUIWidgetClass;
 
 	UPROPERTY(BlueprintReadOnly)
-	UUserWidget* InventoryWidget;
+	UUserWidget* UIWidget;
 
 protected:
 
@@ -39,26 +40,46 @@ protected:
 	// Begin PlayerController interface
 	virtual void PlayerTick(float DeltaTime) override;
 	virtual void SetupInputComponent() override;
+	virtual void BeginPlay() override;
 	// End PlayerController interface
 
 	/** Navigate player to the given world location. */
 	void SetNewMoveDestination(const FVector DestLocation);
 
+	UFUNCTION(BlueprintCallable)
 	void OnToggleInventory();
+
+	UFUNCTION(BlueprintCallable)
+	void OnToggleGamePause();
+
+	UFUNCTION()
 	void OnEquipHotbarSlot1();
+
+	UFUNCTION()
 	void OnEquipHotbarSlot2();
 
+	UFUNCTION()
 	void OnUseActiveItem();
+
+	UFUNCTION()
 	void OnEndUseActiveItem();
 
+	UFUNCTION()
 	void OnChangeFiringMode();
 
+	UFUNCTION()
 	void OnRotateCameraClockwise();
+	
+	UFUNCTION()
 	void OnRotateCameraCounterClockwise();
 
+	UFUNCTION()
 	void OnReloadWeapon();
 
 	/** Input handlers for SetDestination action. */
+	UFUNCTION()
 	void OnSetDestinationPressed();
+
+	UFUNCTION()
 	void OnSetDestinationReleased();
 };
