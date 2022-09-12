@@ -15,6 +15,7 @@ class MPO_API UItemStorage : public UObject, public IItemContainer
     GENERATED_BODY()
 
 protected:
+    UPROPERTY()
     TArray<UInventorySlot*> Content;
 
 public:
