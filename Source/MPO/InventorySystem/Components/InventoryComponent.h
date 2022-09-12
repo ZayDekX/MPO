@@ -11,40 +11,39 @@ class MPO_API UInventoryComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
-	UInventoryComponent();
-
-	void BeginPlay() override;
-
-	void OnRegister() override;
-
-protected:
-
-public:	
-
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	virtual bool IsInteractive() {
-		return true;
-	}
-
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	UInventorySlot* FindByDataAsset(UBaseItemData* Key);
-
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	UInventorySlot* FindByClass(UClass* Key);
-	
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	int32 FindIndexByClass(TSubclassOf<UInventoryItem> Key);
-
+private:
 	/* Actual item storage */
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess))
 	UItemStorage* Storage;
 
 	/* Count of slots in storage */
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, meta = (AllowPrivateAccess))
 	int32 Capacity;
 
 	/* Class of storage */
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, meta = (AllowPrivateAccess))
 	TSubclassOf<UItemStorage> StorageClass;
+
+public:	
+	UInventoryComponent();
+
+	void OnRegister() override;
+
+	UItemStorage* GetStorage() { return Storage; }
+
+	template<class T>
+	T* GetStorage() { return Cast<T>(Storage); }
+
+	/* Find first slot with content described by provided data */
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UInventorySlot* FindByDataAsset(UBaseItemData* Key);
+
+	/* Find first slot with content described by provided class */
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UInventorySlot* FindByClass(TSubclassOf<UInventoryItem> Key);
+
+	/* Find index of first slot with content described by provided class */
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int32 FindIndexByClass(TSubclassOf<UInventoryItem> Key);
+
 };

@@ -35,11 +35,11 @@ public:
     TArray<int32> ShootingModes;
 
     /* Ammo that can be used by weapon */
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Ammo)
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = AmmoSlot)
     UAmmoItemData* AllowedAmmo;
 
     /* Max count of bullets that is stored in magazine */
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Ammo)
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = AmmoSlot)
     int32 MagazineSize;
 
     /* Class of projectiles created by this weapon */

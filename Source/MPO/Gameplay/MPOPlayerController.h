@@ -12,30 +12,39 @@ class AMPOPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
-public:
-	AMPOPlayerController();
-	
+private:	
 	/* Position in world under player's mouse cursor */
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess))
 	FVector PointUnderCursorLocation;
 
 	/* Normal vector of the surface under player's mouse cursor */
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess))
 	FVector UnderCursorSufaceNormal;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	/* Rotation this controller will smoothly turn to */
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, meta=(AllowPrivateAccess))
 	FRotator TargetCameraRotation;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, meta=(MustImplement="MasterUIManager"))
+	/* Class of widget that represents In-Game UI */
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, meta=(MustImplement="MasterUIManager", AllowPrivateAccess))
 	TSubclassOf<UUserWidget> InGameUIWidgetClass;
 
-	UPROPERTY(BlueprintReadOnly)
+	/* In-Game UI */
+	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess))
 	UUserWidget* UIWidget;
+
+public:
+	AMPOPlayerController();
+
+	UUserWidget* GetUIWidget() { return UIWidget; }
+	FRotator& GetTargetCameraRotation() { return TargetCameraRotation; }
+	FVector& GetUnderCursorSufaceNormal() { return UnderCursorSufaceNormal; }
+	FVector& GetPointUnderCursorLocation() { return PointUnderCursorLocation; }
 
 protected:
 
 	/** True if the controlled character should navigate to the mouse cursor. */
-	uint32 bMoveToMouseCursor : 1;
+	bool bMoveToMouseCursor : 1;
 	
 	// Begin PlayerController interface
 	virtual void PlayerTick(float DeltaTime) override;
@@ -46,40 +55,23 @@ protected:
 	/** Navigate player to the given world location. */
 	void SetNewMoveDestination(const FVector DestLocation);
 
+	// Input event handlers
+private:
+	
 	UFUNCTION(BlueprintCallable)
 	void OnToggleInventory();
-
+	
 	UFUNCTION(BlueprintCallable)
 	void OnToggleGamePause();
 
-	UFUNCTION()
 	void OnEquipHotbarSlot1();
-
-	UFUNCTION()
 	void OnEquipHotbarSlot2();
-
-	UFUNCTION()
 	void OnUseActiveItem();
-
-	UFUNCTION()
 	void OnEndUseActiveItem();
-
-	UFUNCTION()
 	void OnChangeFiringMode();
-
-	UFUNCTION()
 	void OnRotateCameraClockwise();
-	
-	UFUNCTION()
 	void OnRotateCameraCounterClockwise();
-
-	UFUNCTION()
 	void OnReloadWeapon();
-
-	/** Input handlers for SetDestination action. */
-	UFUNCTION()
 	void OnSetDestinationPressed();
-
-	UFUNCTION()
 	void OnSetDestinationReleased();
 };

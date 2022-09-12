@@ -11,30 +11,16 @@ void UInventoryComponent::OnRegister()
 
     if (StorageClass) {
         Storage = NewObject<UItemStorage>(this, StorageClass);
-        Storage->Capacity = Capacity;
-        Storage->Init();
+        Storage->Init(Capacity);
     }
-}
-
-void UInventoryComponent::BeginPlay()
-{
-    Super::BeginPlay();
 }
 
 UInventorySlot* UInventoryComponent::FindByDataAsset(UBaseItemData* Key) {
-    if (!Storage) {
-        return nullptr;
-    }
-
-    return Storage->FindByDataAsset(Key);
+    return Storage ? Storage->FindByDataAsset(Key) : nullptr;
 }
 
-UInventorySlot* UInventoryComponent::FindByClass(UClass* Key) {
-    if (!Storage) {
-        return nullptr;
-    }
-
-    return Storage->FindByClass(Key);
+UInventorySlot* UInventoryComponent::FindByClass(TSubclassOf<UInventoryItem> Key) {
+    return Storage ? Storage->FindByClass(Key) : nullptr;
 }
 
 int32 UInventoryComponent::FindIndexByClass(TSubclassOf<UInventoryItem> Key) {

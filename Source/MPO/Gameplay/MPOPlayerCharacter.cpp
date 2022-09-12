@@ -24,7 +24,7 @@ AMPOPlayerCharacter::AMPOPlayerCharacter() {
     // Create a decal in the world to show the cursor's location
     CursorToWorld = CreateDefaultSubobject<UDecalComponent>("CursorToWorld");
     CursorToWorld->SetupAttachment(RootComponent);
-    static ConstructorHelpers::FObjectFinder<UMaterial> DecalMaterialAsset(TEXT("Material'/Game/TopDownCPP/Blueprints/M_Cursor_Decal.M_Cursor_Decal'"));
+    static ConstructorHelpers::FObjectFinder<UMaterial> DecalMaterialAsset(TEXT("Material'/Game/Gameplay/M_Cursor_Decal.M_Cursor_Decal'"));
     if (DecalMaterialAsset.Succeeded())
     {
         CursorToWorld->SetDecalMaterial(DecalMaterialAsset.Object);
@@ -37,14 +37,14 @@ void AMPOPlayerCharacter::Tick(float DeltaSeconds) {
     Super::Tick(DeltaSeconds);
 
     if (auto PlayerController = GetController<AMPOPlayerController>()) {
-        CursorToWorld->SetWorldLocation(PlayerController->PointUnderCursorLocation);
-        CursorToWorld->SetWorldRotation(PlayerController->UnderCursorSufaceNormal.Rotation());
+        CursorToWorld->SetWorldLocation(PlayerController->GetPointUnderCursorLocation());
+        CursorToWorld->SetWorldRotation(PlayerController->GetUnderCursorSufaceNormal().Rotation());
     }
 }
 
 FVector AMPOPlayerCharacter::GetLookAtPoint_Implementation() {
     if (auto PlayerController = GetController<AMPOPlayerController>()) {
-        return PlayerController->PointUnderCursorLocation;
+        return PlayerController->GetPointUnderCursorLocation();
     }
 
     return Super::GetLookAtPoint();

@@ -1,36 +1,25 @@
 #include "Items/WeaponItem.h"
 
-void UWeaponItem::Init() {
-    auto WeaponData = Cast<UWeaponItemData>(Info);
+void UWeaponItem::Init(UBaseItemData* InInfo, int32 InCount) {
+    Super::Init(InInfo, InCount);
+    auto WeaponData = Cast<UWeaponItemData>(InInfo);
 
     Magazine = NewObject<UAmmoStorage>(this);
-    Magazine->SlotClass = UAmmoSlot::StaticClass();
-    Magazine->AllowedAmmo = WeaponData->AllowedAmmo;
-    Magazine->Capacity = WeaponData->MagazineSize;
-    Magazine->Init();
+    Magazine->InitAmmoStorage(WeaponData->MagazineSize, WeaponData->AllowedAmmo, UAmmoSlot::StaticClass());
 }
 
 void UWeaponItem::Reload(UInventorySlot* AmmoSlot) {
-    if (Magazine->IsValidLowLevel()) {
-        Magazine->Reload(AmmoSlot);
-
-        if (ActualWeapon) {
-            ActualWeapon->Ammo = Magazine->GetAmmo();
-        }
-        return;
-    }
-
-    GEngine->AddOnScreenDebugMessage(INDEX_NONE, 10, FColor::Red, "Magazine of weapon is invalid!");
+    Magazine->Reload(AmmoSlot);
 }
 
-void UWeaponItem::StopUse() {
+void UWeaponItem::StopUse_Implementation() {
     if (ActualWeapon) {
         ActualWeapon->StopFire();
     }
 }
 
 void UWeaponItem::CycleFiringMode() {
-    SelectedModeId = (SelectedModeId + 1) % Cast<UWeaponItemData>(Info)->ShootingModes.Num();
+    SelectedModeId = (SelectedModeId + 1) % GetInfo<UWeaponItemData>()->ShootingModes.Num();
 }
 
 bool UWeaponItem::TryBeUsed_Implementation(UObject* User) {
@@ -42,9 +31,8 @@ bool UWeaponItem::TryBeUsed_Implementation(UObject* User) {
         return false;
     }
 
-    auto WeaponInfo = Cast<UWeaponItemData>(Info);
+    auto WeaponInfo = GetInfo<UWeaponItemData>();
     if (!WeaponInfo && WeaponInfo->ShootingModes.IsValidIndex(SelectedModeId)) {
-        GEngine->AddOnScreenDebugMessage(INDEX_NONE, 10, FColor::Red, "Invalid shooting mode selected");
         return false;
     }
 

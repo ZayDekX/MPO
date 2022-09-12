@@ -11,30 +11,41 @@ UCLASS(Blueprintable, nonTransient)
 class MPO_API UInventoryItem : public UObject
 {
     GENERATED_BODY()
-public:
 
-    UInventoryItem() {}
+private:
+
+    friend class UInventorySlot;
 
     /* Constant information about this item */
-    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+    UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess, ExposeOnSpawn))
     UBaseItemData* Info;
 
+protected:
     /* Count of items stored in this "pack" of items */
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess, ExposeOnSpawn))
     int32 Count;
 
-    virtual void Init() {
+public:
+    UInventoryItem() {}
 
+    UFUNCTION()
+    virtual void Init(UBaseItemData* InInfo, int32 InCount) {
+        checkSlow(Count > 0)
+
+        this->Info = InInfo;
+        this->Count = InCount;
     }
 
-    virtual void BeginDestroy() override {
-        Super::BeginDestroy();
-    }
+    UBaseItemData* GetItemInfo() { return Info; }
 
-    /* Checks whether this item can stack with other item */
+    template<class T>
+    T* GetInfo() { return Cast<T>(Info); }
+
+    int32 GetCount() { return Count; }
+
+    /* Check whether this item can stack with other item */
     UFUNCTION(BlueprintCallable, BlueprintPure)
     bool CanStackWith(UInventoryItem* Other) {
-        // if we are stacking not the same instance, both items are valid and can be stacked more than 1 per slot, then we can stack items
         return Other && Other != this && Info && Other->Info == Info && Info->MaxStackSize > 1;
     }
 
@@ -44,13 +55,15 @@ public:
         return Info->IsInteractionAllowed(User) && Count > 0;
     }
 
+    /* Try to perform an interaction between provided object and this item */
     UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
     bool TryBeUsed(UObject* User);
-    
-    virtual void StopUse() {}
-
     virtual bool TryBeUsed_Implementation(UObject* User) 
     {
         return CanBeUsedBy(User);
     }
+
+    UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+    void StopUse();
+    virtual void StopUse_Implementation() {}
 };

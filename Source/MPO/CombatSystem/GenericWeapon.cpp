@@ -1,10 +1,9 @@
 #include "GenericWeapon.h"
 
-// Sets default values
 AGenericWeapon::AGenericWeapon()
 {
-    // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
+
     MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh"));
     SetRootComponent(MeshComponent);
 }
@@ -20,16 +19,17 @@ void AGenericWeapon::EndReload() {
     bIsReloading = false;
 }
 
-void AGenericWeapon::InitWith(UWeaponItemData* ItemData, UAmmoItem* AmmoInfo) {
+void AGenericWeapon::Init(UWeaponItemData* ItemData, UAmmoSlot* InAmmoSlot) {
     if (!ItemData) {
         return;
     }
 
     WeaponData = ItemData;
-    this->Ammo = AmmoInfo;
+    AmmoSlot = InAmmoSlot;
 
     auto& StreamableManager = UAssetManager::GetStreamableManager();
 
+    // async load mesh
     if (!WeaponData->Mesh.IsValid()) {
         StreamableManager.RequestAsyncLoad(
             WeaponData->Mesh.ToSoftObjectPath(),
@@ -39,6 +39,7 @@ void AGenericWeapon::InitWith(UWeaponItemData* ItemData, UAmmoItem* AmmoInfo) {
         OnMeshLoaded();
     }
 
+    // async load animation
     if (!WeaponData->AnimationClass.IsValid()) {
         StreamableManager.RequestAsyncLoad(
             WeaponData->AnimationClass.ToSoftObjectPath(),
@@ -58,21 +59,13 @@ void AGenericWeapon::OnMeshLoaded() {
 }
 
 void AGenericWeapon::BeginFire(int32 MaxShots) {
-    if (!Ammo->IsValidLowLevel()) {
-        GEngine->AddOnScreenDebugMessage(INDEX_NONE, 10, FColor::Red, "Detected invalid ammo in weapon!");
-        return;
-    }
-
-    if (MaxShots < 0 || bIsReloading || !(IsValid(Ammo) && Ammo->Count > 0 && Ammo->TryBeUsed(this))) {
+    if (MaxShots < 0 || bIsReloading || !(IsValid(AmmoSlot) && AmmoSlot->GetContentCount() > 0 && AmmoSlot->GetContent()->TryBeUsed(this))) {
         PerformedShots = 0;
         return;
     }
 
     MaxBurstLength = MaxShots;
-
     bIsShooting = true;
-
-    OnWeaponBeginFire.Broadcast();
 
     auto Projectile = GetWorld()->SpawnActorDeferred<ABulletProjectile>(
         WeaponData->ProjectileClass ? WeaponData->ProjectileClass : ABulletProjectile::StaticClass(),
@@ -83,6 +76,9 @@ void AGenericWeapon::BeginFire(int32 MaxShots) {
 
     Projectile->Init(WeaponData->AllowedAmmo, GetActorRightVector());
     Projectile->FinishSpawning(FTransform(MeshComponent->GetSocketLocation("MuzzleFlash")), true);
+
+    AmmoSlot->OnContentUsed();
+    OnWeaponBeginFire.Broadcast();
 }
 
 void AGenericWeapon::StopFire() {

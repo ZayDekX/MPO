@@ -1,13 +1,15 @@
 #include "ItemStorage.h"
 
-void UItemStorage::Init() {
-    if (!Capacity) {
-        return;
-    }
+void UItemStorage::Init(int32 InCapacity, TSubclassOf<UInventorySlot> InSlotClass) {
     
-    Content.Init(nullptr, Capacity);
-    for (auto i = 0; i < Capacity; i++) {
-        Content[i] = NewObject<UInventorySlot>(this, SlotClass ? SlotClass : UInventorySlot::StaticClass());
+    InSlotClass = InSlotClass ? InSlotClass : GetDefault<UItemStorage>(GetClass())->SlotClass;
+    SlotClass = InSlotClass ? InSlotClass : UInventorySlot::StaticClass();
+
+    Content.Reserve(InCapacity);
+    for (auto i = 0; i < InCapacity; i++) {
+        auto NewSlot = NewObject<UInventorySlot>(this, SlotClass);
+        NewSlot->Init(SlotClass->GetDefaultObject<UInventorySlot>()->GetTypeFilter());
+        Content.Add(NewSlot);
     }
 }
 
@@ -17,7 +19,7 @@ UInventorySlot* UItemStorage::FindByDataAsset(UBaseItemData* Key) {
     }
 
     for (auto Slot : Content) {
-        if (Slot->Content && Slot->Content->Info == Key) {
+        if (Slot->GetContentInfo() == Key) {
             return Slot;
         }
     }
@@ -31,7 +33,8 @@ UInventorySlot* UItemStorage::FindByClass(TSubclassOf<UInventoryItem> Key) {
     }
 
     for (auto Slot : Content) {
-        if (Slot->Content && Slot->Content->GetClass()->IsChildOf(Key)) {
+        auto SlotContent = Slot->GetContent();
+        if (SlotContent && SlotContent->IsA(Key)) {
             return Slot;
         }
     }
@@ -47,13 +50,11 @@ int32 UItemStorage::FindIndexByClass(TSubclassOf<UInventoryItem> Key) {
     auto Index = 0;
 
     for (auto Slot : Content) {
-        if (!Slot->IsValidLowLevel()) {
-            GEngine->AddOnScreenDebugMessage(INDEX_NONE, 10, FColor::Red, "Invalid storage slot detected!");
-            return -1;
-        }
-        if (Slot->Content && Slot->Content->GetClass()->IsChildOf(Key)) {
+        auto SlotContent = Slot->GetContent();
+        if (SlotContent && SlotContent->IsA(Key)) {
             return Index;
         }
+
         Index++;
     }
 
@@ -67,22 +68,18 @@ void UItemStorage::SetCellContent(int32 SlotId, UInventoryItem* Item)
     }
 
     auto Slot = Content[SlotId];
-    if (Slot->IsValidLowLevel()) {
-        Content[SlotId]->SetContent(Item);
-        return;
+    if (Slot) {
+        Slot->SetContent(Item);
     }
-
-    GEngine->AddOnScreenDebugMessage(INDEX_NONE, 10, FColor::Red, "Detected invalid slot in storage!");
 }
 
 UInventoryItem* UItemStorage::CreateItem(TSubclassOf<UInventoryItem> Class, UBaseItemData* Data, int32 Count) {
-    if (!(Class && Data)) {
+    if (!(Class && Data && Count > 0)) {
         return nullptr;
     }
 
     auto Item = NewObject<UInventoryItem>(this, Class);
-    Item->Info = Data;
-    Item->Count = Count;
-    Item->Init();
+    Item->Init(Data, Count);
+
     return Item;
 }

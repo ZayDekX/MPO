@@ -14,21 +14,24 @@ class MPO_API UHealthComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
+private:
+	UPROPERTY(BlueprintReadonly, EditAnywhere, meta=(AllowPrivateAccess))
+	float CurrentHealth;
+
+	UPROPERTY(BlueprintReadonly, EditAnywhere, meta = (AllowPrivateAccess))
+	float MaxHealth;
+
 public:	
 	// Sets default values for this component's properties
 	UHealthComponent();
 
-	UPROPERTY(BlueprintReadonly, EditAnywhere)
-	float CurrentHealth;
-
-	UPROPERTY(BlueprintReadonly, EditAnywhere)
-	float MaxHealth;
-
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintCallable)
 	void ReceiveDamage(float Damage);
 
+	UFUNCTION(BlueprintCallable)
 	void ReceiveHealing(float Healing, bool Revive);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -46,12 +49,15 @@ public:
 		return CurrentHealth < 0.001f;
 	}
 
+	/* Takes damage received by owner */
 	UFUNCTION()
 	void OnOwnerDamaged(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
+	/* Called when CurrentHealth is 0 or less */
 	UPROPERTY(BlueprintAssignable, Category = Health)
 	FDeathEvent OnDeath;
 
+	/* Called when health restored after death */
 	UPROPERTY(BlueprintAssignable, Category = Health)
 	FReviveEvent OnRevive;
 };

@@ -2,11 +2,11 @@
 
 bool UInventorySlot::HasContent()
 {
-	return Content && Content->Count > 0;
+	return Content && Content->GetCount() > 0;
 }
 
 void UInventorySlot::StackFrom(UInventorySlot* Other) {
-	if (!CanStack(Other)) {
+	if (!(Other && CanStore(Other->Content))) {
 		return;
 	}
 	
@@ -20,7 +20,7 @@ void UInventorySlot::StackFrom(UInventorySlot* Other) {
 		return;
 	}
 
-	auto TotalCount = Content->Count + Other->Content->Count;
+	auto TotalCount = Content->GetCount() + Other->Content->GetCount();
 	Content->Count = FMath::Min(GetMaxStackSize(), TotalCount);
 
 	Other->Content->Count = TotalCount - Content->Count;
@@ -40,6 +40,10 @@ int32 UInventorySlot::SetContent(UInventoryItem* Item, bool bOverride, bool bIgn
 		return 0;
 	}
 
+	if (!CanStore(Item)) {
+		return Item->Count;
+	}
+
 	// return incoming item if we can't override content
 	if (HasContent() && !bOverride) {
 		return Item->Count;
@@ -54,7 +58,7 @@ int32 UInventorySlot::SetContent(UInventoryItem* Item, bool bOverride, bool bIgn
 	auto MaxCount = GetMaxStackSize();
 	auto SourceCount = Content->Count;
 
-	if (Content->Count > MaxCount) {
+	if (SourceCount > MaxCount) {
 		Content->Count = MaxCount;
 		return SourceCount - MaxCount;
 	}
@@ -63,18 +67,17 @@ int32 UInventorySlot::SetContent(UInventoryItem* Item, bool bOverride, bool bIgn
 }
 
 void UInventorySlot::SwapWith(UInventorySlot* Other, bool bForce) {
-	if (bForce) {
-		auto ExternalContent = Other->Content;
-		Other->SetContent(Content, true, true);
-		this->SetContent(ExternalContent, true, true);
-		return;
-	}
-	
-	if (!(Other && Other->HasContent() && CanStore(Other->Content))) {
+	if (!(Other && CanStore(Other->Content))) {
 		return;
 	}
 
 	auto ExternalContent = Other->Content;
+
+	if (bForce) {
+		Other->SetContent(Content, true, true);
+		this->SetContent(ExternalContent, true, true);
+		return;
+	}
 
 	// change content of external cell
 	if (HasContent()) {
@@ -95,9 +98,7 @@ void UInventorySlot::SwapWith(UInventorySlot* Other, bool bForce) {
 
 UInventoryItem* UInventorySlot::CloneItem(UInventoryItem* Source, int32 Count = 0) {
 	auto Item = NewObject<UInventoryItem>(this, Source->GetClass());
-	Item->Info = Source->Info;
-	Item->Count = Count > 0 ? Count : Source->Count;
-	Item->Init();
+	Item->Init(Source->Info, Count > 0 ? Count : Source->Count);
 
 	return Item;
 }
@@ -112,7 +113,7 @@ void UInventorySlot::OnContentUsed() {
 	}
 }
 
-int32 UInventorySlot::GetMaxStackSize() {
+int32 UInventorySlot::GetMaxStackSize_Implementation() {
 	if (!HasContent()) {
 		return 0;
 	}

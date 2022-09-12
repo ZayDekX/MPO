@@ -13,25 +13,52 @@ class MPO_API UInventorySlot : public UObject
 {
 	GENERATED_BODY()
 
+private:
+
+	/* Type of allowed items */
+	UPROPERTY(BlueprintReadOnly, meta = (ExposedOnSpawn, AllowPrivateAccess))
+	TSubclassOf<UInventoryItem> TypeFilter;
+
+	/* Stored item */
+	UPROPERTY(BlueprintReadOnly, meta = (ExposedOnSpawn, AllowPrivateAccess))
+	UInventoryItem* Content;
+
 public:
 
 	UInventorySlot()
 	{}
 
-	/* Stored item */
-	UPROPERTY(BlueprintReadWrite, EditInstanceOnly, Instanced)
-	UInventoryItem* Content;
-
-	/* Type of allowed items */
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
-	TSubclassOf<UInventoryItem> TypeFilter;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	bool CanStore(UInventoryItem* Item) {
-		return (!Content || Content->CanStackWith(Item)) && (!TypeFilter || Item && Item->GetClass()->IsChildOf(TypeFilter));
+	virtual void Init(TSubclassOf<UInventoryItem> InTypeFilter) {
+		TypeFilter = InTypeFilter;
 	}
 
-	/* Does this slot contains any items? */
+	TSubclassOf<UInventoryItem> GetTypeFilter() { return TypeFilter; }
+
+	/* Get content of this slot */
+	template<class T>
+	T* GetContent() { return Cast<T>(Content); }
+
+	/* Get content of this slot */
+	UInventoryItem* GetContent() { return Content; }
+
+	/* Get info of content in this slot */
+	template<class T>
+	T* GetContentInfo() { return Cast<T>(GetContentInfo()); }
+
+	/* Get info of content in this slot */
+	UBaseItemData* GetContentInfo() { return Content ? Content->GetItemInfo() : nullptr; }
+
+	/* Check whether this slot can store provided item */
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool CanStore(UInventoryItem* Item) { return !TypeFilter || (Item && Item->IsA(TypeFilter)); }
+
+	/* Check whether this slot can be stacked with other slot */
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool CanStack(UInventorySlot* Other) { 
+		return Other && CanStore(Other->Content) && (!Content || Content->CanStackWith(Other->Content));
+	}
+
+	/* Check whether this slot contains any items */
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool HasContent();
 
@@ -42,6 +69,8 @@ public:
 	/* Forces this slot to change it's content to provided item and returns count of remaining items
 	* bOverride: allows to change content even if this slot is not empty. (false by default)
 	* bIgnoreCapacity: allows to change content by ignoring max capacity defined by item or slot. (false by default)
+	* 
+	* Types are checked in any case
 	*/
 	UFUNCTION(BlueprintCallable)
 	int32 SetContent(UInventoryItem* Item, bool bOverride = false, bool bIgnoreCapacity = false);
@@ -52,19 +81,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SwapWith(UInventorySlot* Other, bool bForce = false);
 
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	bool CanStack(UInventorySlot* Other) {
-		return !HasContent() || Other && Other->HasContent() && CanStore(Other->Content);
-	}
-
 	/* Delete content of this slot */
 	UFUNCTION(BlueprintCallable)
 	void Clear() {
 		Content = nullptr;
 	}
 
-	/* Called when someone have used content of this slot. 
-	* Primarily used for content validation
+	/* Should be called when something have used content of this slot
+	* Used for validation
 	*/
 	UFUNCTION(BlueprintCallable)
 	void OnContentUsed();
@@ -75,8 +99,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	UInventoryItem* CloneItem(UInventoryItem* Source, int32 Count);
 
-	/* Gets max size for contained item. 
-	* Can be defined by stored item or overriden in child type 
+	/* Gets max size for contained item
+	* Can be defined by stored item or overriden in child type
 	*/
-	virtual int GetMaxStackSize();
+	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent)
+	int GetMaxStackSize();
+	virtual int GetMaxStackSize_Implementation();
 };

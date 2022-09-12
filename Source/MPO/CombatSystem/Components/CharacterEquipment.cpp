@@ -80,7 +80,7 @@ void UCharacterEquipment::BeginReload() {
     bIsReloading = true;
 
     OnReloadBegin.Broadcast();
-    EquippedItem->ActualWeapon->BeginReload();
+    EquippedItem->GetActualWeapon()->BeginReload();
 }
 
 void UCharacterEquipment::EndReload() {
@@ -96,14 +96,15 @@ void UCharacterEquipment::EndReload() {
 
 void UCharacterEquipment::BeginEquip(int32 NewSlot)
 {
-    auto StoredItem = Storage->GetCellContent(NewSlot);
-    if (!StoredItem) {
+    EquipTarget = GetStorage()->GetCellContent<UWeaponItem>(NewSlot);
+    if (!EquipTarget) {
         ActiveSlot = -1;
         return;
     }
 
-    EquipTarget = Cast<UWeaponItem>(StoredItem);
-    if (!EquipTarget) {
+    auto Info = EquipTarget->GetInfo<UWeaponItemData>();
+    if(!Info) {
+        EquipTarget = nullptr;
         return;
     }
 
@@ -111,7 +112,7 @@ void UCharacterEquipment::BeginEquip(int32 NewSlot)
     ChangeState = EEquipmentChangeState::Equip;
     bIsChangingEquipment = true;
 
-    OnEquipBegin.Broadcast(Cast<UWeaponItemData>(EquipTarget->Info)->Kind);
+    OnEquipBegin.Broadcast(Info->Kind);
 }
 
 void UCharacterEquipment::ChangeWeapon() {
@@ -126,24 +127,26 @@ void UCharacterEquipment::ChangeWeapon() {
     {
     case EEquipmentChangeState::Equip:
     {
-        auto WeaponInfo = Cast<UWeaponItemData>(EquipTarget->Info);
+        auto WeaponInfo = EquipTarget->GetInfo<UWeaponItemData>();
         FName SocketName = WeaponInfo->Category == EWeaponCategory::Secondary ? "secondary_weapon_socket" : "primary_weapon_socket";
 
-        if (EquippedItem && EquippedItem->ActualWeapon) {
-            EquippedItem->ActualWeapon->DetachFromActor(DetachRules);
+        if (EquippedItem && EquippedItem->GetActualWeapon()) {
+            EquippedItem->GetActualWeapon()->DetachFromActor(DetachRules);
         }
 
         if (EquipTarget) {
-            EquipTarget->ActualWeapon =
-                GetWorld()->SpawnActorDeferred<AGenericWeapon>(
+            auto NewWeapon = GetWorld()->
+                SpawnActorDeferred<AGenericWeapon>(
                     AGenericWeapon::StaticClass(),
                     FTransform::Identity,
                     GetOwner(),
                     GetOwner<APawn>());
 
-            EquipTarget->ActualWeapon->InitWith(WeaponInfo, EquipTarget->Magazine->GetAmmo());
-            EquipTarget->ActualWeapon->AttachToComponent(GetOwner<ACharacter>()->GetMesh(), AttachmentRules, SocketName);
-            EquipTarget->ActualWeapon->FinishSpawning(FTransform::Identity, true);
+
+            NewWeapon->Init(WeaponInfo, EquipTarget->GetMagazine()->GetAmmoSlot());
+            NewWeapon->AttachToComponent(GetOwner<ACharacter>()->GetMesh(), AttachmentRules, SocketName);
+            NewWeapon->FinishSpawning(FTransform::Identity, true);
+            EquipTarget->SetActualWeapon(NewWeapon);
 
             EquippedItem = EquipTarget;
             EquipTarget = nullptr;
@@ -157,9 +160,9 @@ void UCharacterEquipment::ChangeWeapon() {
             break;
         }
 
-        if (auto Weapon = EquippedItem->ActualWeapon) {
+        if (auto Weapon = EquippedItem->GetActualWeapon()) {
             Weapon->DetachFromActor(DetachRules);
-            EquippedItem->ActualWeapon = nullptr;
+            EquippedItem->SetActualWeapon(nullptr);
             EquippedItem = nullptr;
             Weapon->Destroy();
         }

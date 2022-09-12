@@ -7,7 +7,7 @@ public class MPO : ModuleRules
     public MPO(ReadOnlyTargetRules Target) : base(Target)
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-        OptimizeCode = CodeOptimization.Never;
+        //OptimizeCode = CodeOptimization.Never;
 
         PublicIncludePaths.AddRange(new string[]
         {

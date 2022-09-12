@@ -13,9 +13,8 @@ UCLASS()
 class MPO_API UWeaponStorage : public UItemStorage
 {
 	GENERATED_BODY()
-	
-	virtual void Init() override {
-		SlotClass = UWeaponSlot::StaticClass();
-		Super::Init();
+	virtual void Init(int32 InCapacity, TSubclassOf<UInventorySlot> InSlotClass = nullptr) override
+	{
+		Super::Init(InCapacity, InSlotClass && InSlotClass->IsChildOf<UWeaponSlot>() ? InSlotClass : UWeaponSlot::StaticClass());
 	}
 };

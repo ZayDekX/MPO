@@ -13,30 +13,35 @@ UCLASS()
 class MPO_API UAmmoSlot : public UInventorySlot
 {
 	GENERATED_BODY()
+
+private:
+
+	friend class UAmmoStorage;
+
+	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess))
+	int Capacity;
 	
 public:
 
 	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess))
-	int Capacity;
-
-	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess))
 	UAmmoItemData* AllowedAmmo;
 
-	UAmmoSlot() {
-		TypeFilter = UAmmoItem::StaticClass();
+	virtual void Init(TSubclassOf<UInventoryItem> InTypeFilter) override {
+		Super::Init(InTypeFilter && InTypeFilter->IsChildOf<UAmmoItem>() ? InTypeFilter : UAmmoItem::StaticClass());
 	}
 
-	virtual int GetMaxStackSize() override {
+	virtual int GetMaxStackSize_Implementation() override {
 		return Capacity;
 	}
 
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	bool IsFull() {
-		return Content && Content->Count == Capacity;
+	int32 GetContentCount() {
+		auto Ammo = GetContent();
+		return Ammo ? Ammo->GetCount() : 0;
 	}
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsFull() { return GetContentCount() == Capacity; }
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	bool IsEmpty() {
-		return !Content || Content->Count == 0;
-	}
+	bool IsEmpty() { return GetContentCount() == 0; }
 };

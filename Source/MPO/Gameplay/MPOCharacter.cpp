@@ -30,11 +30,9 @@ AMPOCharacter::AMPOCharacter()
     CharacterInventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
     CharacterEquipment = CreateDefaultSubobject<UCharacterEquipment>(TEXT("CharacterEquipmentComponent"));
 
+    // Create health manager
     HealthManager = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthManager"));
-    HealthManager->MaxHealth = 5000;
-    HealthManager->CurrentHealth = 5000;
 
-    // Activate ticking in order to update the cursor every frame.
     PrimaryActorTick.bCanEverTick = true;
     PrimaryActorTick.bStartWithTickEnabled = true;
 }
@@ -68,7 +66,6 @@ void AMPOCharacter::Tick(float DeltaSeconds)
     Super::Tick(DeltaSeconds);
 
     IsMoving = GetVelocity().Size() > 0;
-
     LookAt = GetLookAtPoint();
     
     auto LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), LookAt);

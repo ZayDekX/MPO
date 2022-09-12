@@ -17,47 +17,53 @@ class MPO_API ABulletProjectile : public AActor
 private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Projectile, meta = (AllowPrivateAccess = "true"))
-		class UProjectileMovementComponent* ProjectileMovement;
+	class UProjectileMovementComponent* ProjectileMovement;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Projectile, meta = (AllowPrivateAccess = "true"))
-		class UBoxComponent* Collision;
+	class UBoxComponent* Collision;
 
-	int Bounces;
 	float Mass;
-	UParticleSystem* ABulletProjectile::GetEmitterFromVelocity(float Velocity);
+	int32 Bounces;
+
+	/* Sets how many times bullet can bounce off of a hard surface */
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, meta=(AllowPrivateAccess))
+	int32 MaxBounces;
+
+	/* Emitters thar can spawn after hitting hard surface */
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, meta=(AllowPrivateAccess))
+	TArray<UParticleSystem*> HitEmitters;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, meta=(AllowPrivateAccess))
+	float InitialSpeedMultiplier;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, meta=(AllowPrivateAccess))
+	float MaxBounceAngle;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, meta=(AllowPrivateAccess))
+	bool bCanPenetrate;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, meta=(AllowPrivateAccess))
+	TSubclassOf<UDamageType> DamageType;
+
 	UFUNCTION()
 	void OnBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity);
+
 	UFUNCTION()
 	void OnStop(const FHitResult& ImpactResult);
-	void OnTracerLoaded();
 
+	UPROPERTY()
 	TSoftObjectPtr<UParticleSystem> Tracer;
 
+	UParticleSystem* ABulletProjectile::GetEmitterFromVelocity(float Velocity);
+
+	void OnTracerLoaded();
+
 public:	
-	// Sets default values for this actor's properties
 	ABulletProjectile();
 
 	void Init(UAmmoItemData* AmmoData, FVector Direction);
 
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor);
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
-	TArray<UParticleSystem*> HitEmitters;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	int32 MaxBounces;
-
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
-	float InitialSpeedMultiplier;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	float MaxBounceAngle;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	bool bCanPenetrate;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	TSubclassOf<UDamageType> DamageType;
 
 	/** Returns ProjectileMovement subobject*/
 	FORCEINLINE class UProjectileMovementComponent* GetProjectileMovement() { return ProjectileMovement; }

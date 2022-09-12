@@ -18,12 +18,14 @@ class MPO_API IItemUser
 {
 	GENERATED_BODY()
 public:
+	/* Try to perform an interaction with provided item */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool TryUse(UInventoryItem* Item);
 	virtual bool TryUse_Implementation(UInventoryItem* Item) {
 		return Item->TryBeUsed(Cast<UObject>(this));
 	}
 
+	/* Check whether it's possible to interact with provided item */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool CanUse(UInventoryItem* Item);
 	bool CanUse_Implementation(UInventoryItem* Item) {

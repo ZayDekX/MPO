@@ -20,7 +20,7 @@ class MPO_API IMasterUIManager
 
 public:
 	/* Toggle pause menu
-	* Called after game is paused or unpaused
+	* Called after player (MPOPlayerController) have paused the game
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
 	void TogglePauseMenu();

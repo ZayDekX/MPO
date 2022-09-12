@@ -19,25 +19,29 @@ private:
     UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess))
     int32 SelectedModeId;
 
-public:
-    virtual void Init() override;
-
-    UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+    UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess))
     AGenericWeapon* ActualWeapon;
 
-    UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+    UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess))
     UAmmoStorage* Magazine;
 
-    UAmmoItemData* GetAllowedAmmo() {
-        return Cast<UWeaponItemData>(Info)->AllowedAmmo;
-    }
+public:
+    virtual void Init(UBaseItemData* InInfo, int32 InCount) override;
+
+    AGenericWeapon* GetActualWeapon() { return ActualWeapon; }
+    
+    void SetActualWeapon(AGenericWeapon* NewWeapon) { ActualWeapon = NewWeapon; }
+
+    UAmmoStorage* GetMagazine() { return Magazine; }
+
+    UAmmoItemData* GetAllowedAmmo() { return GetInfo<UWeaponItemData>()->AllowedAmmo; }
 
     void CycleFiringMode();
 
     UFUNCTION(BlueprintCallable)
     void Reload(UInventorySlot* AmmoSlot);
 
-    virtual void StopUse() override;
+    virtual void StopUse_Implementation() override;
 
     virtual bool TryBeUsed_Implementation(UObject* User) override;
 

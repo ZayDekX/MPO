@@ -14,7 +14,7 @@ class MPO_API UWeaponSlot : public UInventorySlot
 	GENERATED_BODY()
 public:
 
-	UWeaponSlot() {
-		TypeFilter = UWeaponItem::StaticClass();
+	virtual void Init(TSubclassOf<UInventoryItem> InTypeFilter) override {
+		Super::Init(InTypeFilter && InTypeFilter->IsChildOf<UWeaponItem>() ? InTypeFilter : UWeaponItem::StaticClass());
 	}
 };
